@@ -1,11 +1,11 @@
-package com.mangkyu.template
+package com.mangkyu.template.apis
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class KotlinSpringBootTemplateApplication
+class TemplateApisApplication
 
 fun main(args: Array<String>) {
-    runApplication<KotlinSpringBootTemplateApplication>(*args)
+    runApplication<TemplateApisApplication>(*args)
 }

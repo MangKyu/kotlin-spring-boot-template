@@ -1,49 +1,78 @@
+// plugin 이란 미리 구성해놓은 task 들의 모음이며, 특정 빌드과정에 필요한 기본정보를 포함함
 plugins {
+    id("java") // 테스트, 번들링 기능과 함께 Java 컴파일을 추가해주며, 다른 JVM 언어 플러그인의 기반이 됨
+    id("org.springframework.boot") version "3.4.1" // 실행가능한 jar 또는 war로 패키징하여 애플리케이션 실행이 가능하도록 하며, spring-boot-dependencies 기반의 의존성 관리를 사용함
+    id("io.spring.dependency-management") version "1.1.7" // 자동으로 spring-boot-dependencies bom을 끌어와서 버전 관리를 해줌
+
     kotlin("jvm") version "1.9.25"
+    kotlin("plugin.jpa")  version "1.9.25"
     kotlin("plugin.spring") version "1.9.25"
-    id("org.springframework.boot") version "3.4.1"
-    id("io.spring.dependency-management") version "1.1.7"
-    kotlin("plugin.jpa") version "1.9.25"
+    kotlin("plugin.serialization") version "1.9.25"
 }
 
-group = "com.mangkyu"
+group = "com.mangkyu.template"
 version = "0.0.1-SNAPSHOT"
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+
+// 현재의 root 프로젝트와 앞으로 추가될 서브 모듈에 대한 설정
+allprojects {
+
+    // 라이브러리들을 받아올 원격 저장소들을 설정함
+    repositories {
+        mavenCentral()
     }
 }
 
-repositories {
-    mavenCentral()
-}
 
-dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-data-redis")
-    implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    runtimeOnly("com.h2database:h2")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-}
+// 루트 제외한 전체 서브 모듈에 해당되는 설정
+// settings.gradle에 include된 전체 프로젝트에 대한 공통 사항을 명시함
+// root 프로젝트까지 적용하고 싶다면 allprojects에서 사용해야 함
+subprojects {
 
-kotlin {
-    compilerOptions {
-        freeCompilerArgs.addAll("-Xjsr305=strict")
+    // subprojects 블록 안에서는 plugins 블록을 사용할 수 없으므로 apply plugin을 사용해야 함
+    apply(plugin = "idea")
+    apply(plugin = "java")
+    apply(plugin = "java-library")
+    apply(plugin = "kotlin-kapt")
+    apply(plugin = "org.springframework.boot")
+    apply(plugin = "io.spring.dependency-management")
+    apply(plugin = "org.jetbrains.kotlin.jvm")
+    apply(plugin = "org.jetbrains.kotlin.plugin.jpa")
+    apply(plugin = "org.jetbrains.kotlin.plugin.spring")
+
+    // 모든 서브 모듈에서 사용될 공통 의존성들을 추가함
+    dependencies {
+        implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+        implementation("org.springframework.boot:spring-boot-starter-data-redis")
+        implementation("org.springframework.boot:spring-boot-starter-validation")
+        implementation("org.springframework.boot:spring-boot-starter-web")
+        implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+        implementation("org.jetbrains.kotlin:kotlin-reflect")
+        testImplementation("org.springframework.boot:spring-boot-starter-test")
+        testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     }
-}
 
-allOpen {
-    annotation("jakarta.persistence.Entity")
-    annotation("jakarta.persistence.MappedSuperclass")
-    annotation("jakarta.persistence.Embeddable")
-}
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
+    kotlin {
+        compilerOptions {
+            freeCompilerArgs.addAll("-Xjsr305=strict")
+        }
+    }
+
+    allOpen {
+        annotation("jakarta.persistence.Entity")
+        annotation("jakarta.persistence.MappedSuperclass")
+        annotation("jakarta.persistence.Embeddable")
+    }
+
+    // 모든 서브 모듈에서 Junit을 사용하기 위한 설정
+    tasks.withType<Test> {
+        useJUnitPlatform()
+    }
 }
